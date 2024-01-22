@@ -2,6 +2,10 @@ package com.axone_io.ignition.git.records;
 
 import com.axone_io.ignition.git.web.ProjectList.ProjectListEditorSource;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.*;
+import com.inductiveautomation.ignition.gateway.web.components.editors.CheckboxEditorSource;
+
+import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import simpleorm.dataset.SFieldFlags;
@@ -18,13 +22,25 @@ public class GitProjectsConfigRecord extends PersistentRecord {
     }
 
     public static final IdentityField Id = new IdentityField(META);
-    public static final StringField ProjectName = new StringField(META, "ProjectName", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE);
-    public static final StringField URI =
-            new StringField(META, "URI", SFieldFlags.SMANDATORY, SFieldFlags.SDESCRIPTIVE);
+    public static final StringField ProjectName = new StringField(META, "ProjectName", SFieldFlags.SMANDATORY,
+            SFieldFlags.SDESCRIPTIVE);
+    public static final StringField URI = new StringField(META, "URI", SFieldFlags.SMANDATORY,
+            SFieldFlags.SDESCRIPTIVE);
 
+    public static final StringField BranchName = new StringField(META, "BranchName", SFieldFlags.SMANDATORY)
+            .setDefault("master");
 
-    static final Category ProjectConfiguration = new Category("GitProjectsConfigRecord.Category.ProjectConfiguration", 1000).include(ProjectName, URI);
+    public static final BooleanField ImportTags = new BooleanField(META, "ImportTags", SFieldFlags.SMANDATORY)
+            .setDefault(true);
 
+    public static final BooleanField ImportThemes = new BooleanField(META, "ImportThemes", SFieldFlags.SMANDATORY)
+            .setDefault(true);
+
+    public static final BooleanField ImportImages = new BooleanField(META, "ImportImages", SFieldFlags.SMANDATORY)
+            .setDefault(true);
+
+    static final Category ProjectConfiguration = new Category("GitProjectsConfigRecord.Category.ProjectConfiguration",
+            1000).include(ProjectName, URI);
 
     public long getId() {
         return this.getLong(Id);
@@ -34,16 +50,40 @@ public class GitProjectsConfigRecord extends PersistentRecord {
         return this.getString(ProjectName);
     }
 
-    public String getURI() {
-        return this.getString(URI);
-    }
-
     public void setProjectName(String projectName) {
         setString(ProjectName, projectName);
     }
 
+    public String getURI() {
+        return this.getString(URI);
+    }
+
     public void setURI(String uri) {
         setString(URI, uri);
+    }
+
+    public boolean getImportTags() {
+        return this.getBoolean(ImportTags);
+    }
+
+    public void setImportTags(boolean val) {
+        setBoolean(ImportTags, val);
+    }
+
+    public boolean getImportThemes() {
+        return this.getBoolean(ImportThemes);
+    }
+
+    public void setImportThemes(boolean val) {
+        setBoolean(ImportThemes, val);
+    }
+
+    public boolean getImportImages() {
+        return this.getBoolean(ImportImages);
+    }
+
+    public void setImportImages(boolean val) {
+        setBoolean(ImportImages, val);
     }
 
     public boolean isSSHAuthentication() {
@@ -57,6 +97,11 @@ public class GitProjectsConfigRecord extends PersistentRecord {
         URI.getFormMeta().setFieldDescriptionKeyAddMode("GitProjectsConfigRecord.URI.NewDesc");
         URI.getFormMeta().setFieldDescriptionKeyEditMode("GitProjectsConfigRecord.URI.EditDesc");
         URI.setWide();
+
+        // TODO: Set name and description keys
+        ImportTags.getFormMeta().setEditorSource(CheckboxEditorSource.getSharedInstance());
+        ImportThemes.getFormMeta().setEditorSource(CheckboxEditorSource.getSharedInstance());
+        ImportImages.getFormMeta().setEditorSource(CheckboxEditorSource.getSharedInstance());
 
     }
 }

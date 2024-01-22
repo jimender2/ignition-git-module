@@ -1,16 +1,22 @@
 package com.axone_io.ignition.git;
 
 import com.axone_io.ignition.git.commissioning.utils.GitCommissioningUtils;
+import com.axone_io.ignition.git.records.GitConfigRecord;
 import com.axone_io.ignition.git.records.GitProjectsConfigRecord;
 import com.axone_io.ignition.git.records.GitReposUsersRecord;
+import com.axone_io.ignition.git.web.GitConfigRecordPage;
 import com.axone_io.ignition.git.web.GitProjectsConfigPage;
 import com.inductiveautomation.ignition.common.BundleUtil;
 import com.inductiveautomation.ignition.common.licensing.LicenseState;
 import com.inductiveautomation.ignition.gateway.clientcomm.ClientReqSession;
+import com.inductiveautomation.ignition.gateway.localdb.persistence.IRecordListener;
 import com.inductiveautomation.ignition.gateway.model.AbstractGatewayModuleHook;
 import com.inductiveautomation.ignition.gateway.model.GatewayContext;
 import com.inductiveautomation.ignition.gateway.web.models.ConfigCategory;
+import com.inductiveautomation.ignition.gateway.web.models.DefaultConfigTab;
 import com.inductiveautomation.ignition.gateway.web.models.IConfigTab;
+import com.inductiveautomation.ignition.gateway.web.models.KeyValue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,19 +31,26 @@ public class GatewayHook extends AbstractGatewayModuleHook {
     private GatewayScriptModule scriptModule;
     public static GatewayContext context;
 
-    public static final ConfigCategory CONFIG_CATEGORY =
-            new ConfigCategory(MODULE_NAME, "bundle_git.Config.Git.MenuTitle", 700);
+    public static final ConfigCategory CONFIG_CATEGORY = new ConfigCategory(MODULE_NAME,
+            "bundle_git.Config.Git.MenuTitle", 700);
+
+    public static final IConfigTab PEIntegrationAPISettings_CONFIG_ENTRY = DefaultConfigTab.builder()
+            .category(CONFIG_CATEGORY)
+            .name("Production Execution Integration API")
+            .i18n("ProductionExecution.integrationapi.nav.status.header")
+            .page(GitConfigRecordPage.class)
+            .terms("production2", "execution2")
+            .build();
 
     @Override
     public List<? extends IConfigTab> getConfigPanels() {
-        return List.of(GitProjectsConfigPage.MENU_ENTRY);
+        return List.of(GitProjectsConfigPage.MENU_ENTRY, PEIntegrationAPISettings_CONFIG_ENTRY);
     }
 
     @Override
     public List<ConfigCategory> getConfigCategories() {
         return Collections.singletonList(CONFIG_CATEGORY);
     }
-
 
     @Override
     public void setup(GatewayContext gatewayContext) {
@@ -47,11 +60,31 @@ public class GatewayHook extends AbstractGatewayModuleHook {
         verifySchema(gatewayContext);
 
         logger.info("setup()");
+
+        GitConfigRecord.META.addRecordListener(new IRecordListener<GitConfigRecord>() {
+            @Override
+            public void recordUpdated(GitConfigRecord localGitConfigRecord) {
+                logger.info("recordUpdated");
+                GitCommissioningUtils.loadConfiguration();
+            }
+
+            @Override
+            public void recordAdded(GitConfigRecord localGitConfigRecord) {
+                logger.info("recordAdded");
+                GitCommissioningUtils.loadConfiguration();
+            }
+
+            @Override
+            public void recordDeleted(KeyValue arg0) {
+                GitCommissioningUtils.loadConfiguration();
+            }
+        });
     }
 
     private void verifySchema(GatewayContext context) {
         try {
-            context.getSchemaUpdater().updatePersistentRecords(GitProjectsConfigRecord.META, GitReposUsersRecord.META);
+            context.getSchemaUpdater().updatePersistentRecords(GitProjectsConfigRecord.META, GitReposUsersRecord.META,
+                    GitConfigRecord.META);
         } catch (SQLException e) {
             logger.error("Error verifying persistent record schemas for HomeConnect records.", e);
         }

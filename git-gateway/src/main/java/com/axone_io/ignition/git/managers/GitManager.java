@@ -67,7 +67,6 @@ public class GitManager {
         return context.getSystemManager().getDataDir().toPath();
     }
 
-
     public static void clearDirectory(Path folderPath) {
         try {
             if (folderPath.toFile().exists()) {
@@ -78,14 +77,16 @@ public class GitManager {
         }
     }
 
-    public static void setAuthentication(TransportCommand<?, ?> command, String projectName, String userName) throws Exception {
+    public static void setAuthentication(TransportCommand<?, ?> command, String projectName, String userName)
+            throws Exception {
         GitProjectsConfigRecord gitProjectsConfigRecord = getGitProjectConfigRecord(projectName);
         GitReposUsersRecord user = getGitReposUserRecord(gitProjectsConfigRecord, userName);
 
         setAuthentication(command, gitProjectsConfigRecord, user);
     }
 
-    public static void setAuthentication(TransportCommand<?, ?> command, GitProjectsConfigRecord gitProjectsConfigRecord, GitReposUsersRecord user) {
+    public static void setAuthentication(TransportCommand<?, ?> command,
+            GitProjectsConfigRecord gitProjectsConfigRecord, GitReposUsersRecord user) {
 
         if (gitProjectsConfigRecord.isSSHAuthentication()) {
             command.setTransportConfigCallback(getSshTransportConfigCallback(user));
@@ -93,7 +94,6 @@ public class GitManager {
             command.setCredentialsProvider(getUsernamePasswordCredentialsProvider(user));
         }
     }
-
 
     public static void setCommitAuthor(CommitCommand command, String projectName, String userName) {
         try {
@@ -119,13 +119,14 @@ public class GitManager {
     }
 
     public static GitReposUsersRecord getGitReposUserRecord(GitProjectsConfigRecord gitProjectsConfigRecord,
-                                                            String userName) throws Exception {
+            String userName) throws Exception {
         SQuery<GitReposUsersRecord> userQuery = new SQuery<>(GitReposUsersRecord.META)
                 .eq(GitReposUsersRecord.ProjectId, gitProjectsConfigRecord.getId())
-                .eq(GitReposUsersRecord.IgnitionUser, userName);
+                .like(GitReposUsersRecord.IgnitionUser, userName);
         GitReposUsersRecord user = context.getPersistenceInterface().queryOne(userQuery);
 
         if (user == null) {
+            logger.trace("userName: " + userName + " projectId: " + gitProjectsConfigRecord.getId());
             throw new Exception("Git User not configured.");
         }
 
@@ -139,6 +140,7 @@ public class GitManager {
     public static SshTransportConfigCallback getSshTransportConfigCallback(GitReposUsersRecord user) {
         return new SshTransportConfigCallback(user.getSSHKey());
     }
+
     public static int countOccurrences(Set<String> list, String prefix) {
         int count = 0;
         for (String str : list) {
@@ -150,10 +152,10 @@ public class GitManager {
     }
 
     public static void uncommittedChangesBuilder(String projectName,
-                                                 Set<String> updates,
-                                                 String type,
-                                                 List<String> changes,
-                                                 DatasetBuilder builder) {
+            Set<String> updates,
+            String type,
+            List<String> changes,
+            DatasetBuilder builder) {
         for (String update : updates) {
             String[] rowData = new String[3];
             String actor = "unknown";
@@ -167,9 +169,9 @@ public class GitManager {
                 actor = getActor(projectName, path);
             }
 
-            if((update.endsWith("resource.json") && countOccurrences(updates, path) < 2)
-                    || update.endsWith("project.json")){
-                if(!isUpdatedResource(projectName, update)){
+            if ((update.endsWith("resource.json") && countOccurrences(updates, path) < 2)
+                    || update.endsWith("project.json")) {
+                if (!isUpdatedResource(projectName, update)) {
                     toAdd = false;
                 }
             }
@@ -232,15 +234,16 @@ public class GitManager {
                         .setName(urIish.getHumanishName())
                         .setUri(urIish).call();
 
-                //GIT FETCH
+                // GIT FETCH
                 FetchCommand fetch = git.fetch()
                         .setRemote(urIish.getHumanishName())
-                        .setRefSpecs(new RefSpec("refs/heads/" + branchName + ":refs/remotes/" + urIish.getHumanishName() + "/" + branchName));
+                        .setRefSpecs(new RefSpec("refs/heads/" + branchName + ":refs/remotes/"
+                                + urIish.getHumanishName() + "/" + branchName));
 
                 setAuthentication(fetch, projectName, userName);
                 fetch.call();
 
-                //GIT CHECKOUT
+                // GIT CHECKOUT
                 CheckoutCommand checkout = git.checkout()
                         .setCreateBranch(true)
                         .setName(branchName)
@@ -254,16 +257,18 @@ public class GitManager {
         }
     }
 
-
     public static ResourcePath getResourcePath(String resourcePath) {
         String moduleId = "";
         String typeId = "";
         String resource = "";
         String[] paths = resourcePath.split("/");
 
-        if (paths.length > 0) moduleId = paths[0];
-        if (paths.length > 1) typeId = paths[1];
-        if (paths.length > 2) resource = resourcePath.replace(moduleId + "/" + typeId + "/", "");
+        if (paths.length > 0)
+            moduleId = paths[0];
+        if (paths.length > 1)
+            typeId = paths[1];
+        if (paths.length > 2)
+            resource = resourcePath.replace(moduleId + "/" + typeId + "/", "");
 
         return new ResourcePath(new ResourceType(moduleId, typeId), resource);
     }
@@ -274,10 +279,10 @@ public class GitManager {
         config.save();
     }
 
-    public static boolean isUpdatedResource(String projectName, String resourcePath){
+    public static boolean isUpdatedResource(String projectName, String resourcePath) {
         boolean isUpdatedResource;
         Path projectPath = getProjectFolderPath(projectName);
-        String filePath = projectPath.toAbsolutePath() + "\\" +resourcePath.replace("/", "\\");
+        String filePath = projectPath.toAbsolutePath() + "\\" + resourcePath.replace("/", "\\");
 
         try (Repository repository = getGit(projectPath).getRepository()) {
 
@@ -314,7 +319,6 @@ public class GitManager {
                     JsonObject jsonBefore = (JsonObject) g.fromJson(contentBefore, JsonElement.class);
                     jsonBefore.remove("files");
                     jsonBefore.remove("attributes");
-
 
                     String contentAfter = new String(Files.readAllBytes(Paths.get(filePath)));
                     JsonObject jsonAfter = (JsonObject) g.fromJson(contentAfter, JsonElement.class);
