@@ -34,17 +34,17 @@ public class GatewayHook extends AbstractGatewayModuleHook {
     public static final ConfigCategory CONFIG_CATEGORY = new ConfigCategory(MODULE_NAME,
             "bundle_git.Config.Git.MenuTitle", 700);
 
-    public static final IConfigTab PEIntegrationAPISettings_CONFIG_ENTRY = DefaultConfigTab.builder()
+    public static final IConfigTab GitModuleIntegration_CONFIG_ENTRY = DefaultConfigTab.builder()
             .category(CONFIG_CATEGORY)
-            .name("Production Execution Integration API")
-            .i18n("ProductionExecution.integrationapi.nav.status.header")
+            .name("Git Config")
+            .i18n("GitConfig.integrationapi.nav.status.header")
             .page(GitConfigRecordPage.class)
-            .terms("production2", "execution2")
+            .terms("git", "module")
             .build();
 
     @Override
     public List<? extends IConfigTab> getConfigPanels() {
-        return List.of(GitProjectsConfigPage.MENU_ENTRY, PEIntegrationAPISettings_CONFIG_ENTRY);
+        return List.of(GitProjectsConfigPage.MENU_ENTRY, GitModuleIntegration_CONFIG_ENTRY);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class GatewayHook extends AbstractGatewayModuleHook {
             context.getSchemaUpdater().updatePersistentRecords(GitProjectsConfigRecord.META, GitReposUsersRecord.META,
                     GitConfigRecord.META);
         } catch (SQLException e) {
-            logger.error("Error verifying persistent record schemas for HomeConnect records.", e);
+            logger.error("Error verifying persistent record schemas for Git Config records.", e);
         }
     }
 

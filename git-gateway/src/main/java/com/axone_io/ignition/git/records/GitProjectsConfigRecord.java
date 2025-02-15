@@ -4,8 +4,6 @@ import com.axone_io.ignition.git.web.ProjectList.ProjectListEditorSource;
 import com.inductiveautomation.ignition.gateway.localdb.persistence.*;
 import com.inductiveautomation.ignition.gateway.web.components.editors.CheckboxEditorSource;
 
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import simpleorm.dataset.SFieldFlags;
