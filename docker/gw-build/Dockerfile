@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.14
+# syntax=docker/dockerfile:1.16
 ARG IGNITION_VERSION=${IGNITION_VERSION}
 FROM inductiveautomation/ignition:${IGNITION_VERSION} as prep
 
