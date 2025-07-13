@@ -3,7 +3,7 @@
 ---
 services:
   gateway:
-    image: inductiveautomation/ignition:8.1.47
+    image: inductiveautomation/ignition:8.1.48
     hostname: gateway
     ports:
       - 9088:8088
